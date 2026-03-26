@@ -88,7 +88,11 @@ class Visualizer:
             translation, quaternion (w, x, y, z), and joint angles
         """
         self.global_translation = hand_pose[:, 0:3]
-        assert torch.all(torch.norm(hand_pose[:, 3:7], dim=-1) == 1)
+
+        eps = 1e-4
+        norm = torch.norm(hand_pose[:, 3:7], dim=-1)
+        assert torch.all(torch.abs(norm - 1.0) < eps)
+
         self.global_rotation = quaternion_to_matrix(hand_pose[:, 3:7])
 
         # re-order the joints

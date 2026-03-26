@@ -23,7 +23,14 @@ Looking for more diverse and higher-quality dexterous grasps? Check out [Dexonom
 ## Getting Started
 1. **Install git lfs**: Before `git clone` this repository, please make sure that the git lfs has been installed by `sudo apt install git-lfs`.
 
-2. **Install the Python environment**:
+2. **Clone with submodules**:
+```bash
+git clone --recurse-submodules git@github.com:DexGrasp-TH/BimanBODex.git
+# Or if already cloned:
+git submodule update --init --recursive
+```
+
+3. **Install the Python environment**:
 ```bash
 conda create -n bibodex python=3.10
 conda activate bibodex
@@ -50,6 +57,9 @@ pip install hydra-core
 pip install pyrender
 
 cd third_party/pytorch_kinematics
+pip install -e .
+
+cd ../utils_python
 pip install -e .
 ```
 
@@ -101,28 +111,54 @@ python example_grasp/visualize_npy.py -c sim_shadow/fc.yml -p debug -m grasp
 Synthesize bimanual grasps:
 ```bash
 # debug
-python example_grasp/plan_batch_env.py -c sim_dual_dummy_arm_shadow/fc.yml -w 100 -k -debug -d all --exp_name debug_
+python example_grasp/plan_batch_env.py -c sim_dual_dummy_arm_shadow/fc.yml -w 100 -k -debug -d all --exp_name <NAME>
 
 # not debug
-python example_grasp/plan_batch_env.py -c sim_dual_dummy_arm_shadow/fc.yml -w 100 -k --exp_name xxx
+python example_grasp/plan_batch_env.py -c sim_dual_dummy_arm_shadow/fc.yml -w 100 -k --exp_name <NAME>
 ```
 
 Render images:
 ```bash
-python example_grasp/main.py task=render manip_cfg_file=sim_dual_dummy_arm_shadow/fc.yml task.debug=False name=debug_
+python example_grasp/main.py task=render manip_cfg_file=sim_dual_dummy_arm_shadow/fc.yml n_worker=96 task.debug=False name=<EXP_NAME> 
 ```
 
 Synthesize single-hand grasps:
 
 ```bash
 # debug
-CUDA_VISIBLE_DEVICES=7 python example_grasp/plan_batch_env.py -c sim_shadow/tabletop.yml -w 100 -k -debug -d all --exp_name debug_0
+CUDA_VISIBLE_DEVICES=7 python example_grasp/plan_batch_env.py -c sim_shadow/tabletop.yml -w 100 -k -debug -d all --exp_name <NAME>
 
 # non-debug
-CUDA_VISIBLE_DEVICES=0 python example_grasp/plan_batch_env.py -c sim_shadow/fc.yml -w 100 -k --exp_name debug_0
+CUDA_VISIBLE_DEVICES=0 python example_grasp/plan_batch_env.py -c sim_shadow/fc.yml -w 100 -k --exp_name <NAME>
 # multi-GPU
-python example_grasp/multi_gpu.py -c sim_shadow/fc.yml -w 100 -t grasp -g 0 1 2 3 
+python example_grasp/multi_gpu.py -c sim_shadow/fc.yml -w 100 -t grasp -g 0 1 2 3 4 5 6 7 --exp_name <NAME>
 ```
+
+Check the synthesis progress:
+```bash
+python scripts/synthesis_percentage.py <config_path> <exp_name> # e.g., sim_shadow/tabletop_full server_debug0
+```
+
+### Five Grasp Types
+
+Synthesis:
+```bash
+CUDA_VISIBLE_DEVICES=7 python example_grasp/plan_batch_env.py -c <ROBOT>/<GRASP_TYPE>.yml -w 100 -k --exp_name <NAME>
+```
+
+Render:
+```bash
+python example_grasp/main.py task=render manip_cfg_file=<ROBOT>/<GRASP_TYPE>.yml n_worker=96 task.debug=False name=<EXP_NAME> 
+```
+
+* ROBOT/GRASP_TYPE:
+  * sim_shadow/tabletop_two
+  * sim_shadow/tabletop_three
+  * sim_shadow/tabletop_full
+  * sim_dual_dummy_arm_shadow/tabletop_full
+
+
+
 
 ## License
 

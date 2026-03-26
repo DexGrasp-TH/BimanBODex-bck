@@ -61,10 +61,17 @@ def scenecfg2worldcfg(scene_cfg):
 
 class WorldConfigDataset(Dataset):
 
-    def __init__(self, type, template_path, start, end):
+    def __init__(self, type, template_path, start, end, object_scale_list=None):
         assert type == "scene_cfg"
         scene_cfg_path = join_path(get_assets_path(), template_path)
-        self.scene_path_lst = np.random.permutation(sorted(glob(scene_cfg_path)))[start:end]
+        all_paths = sorted(glob(scene_cfg_path))
+
+        # Filter by scale if object_scale_list is provided
+        if object_scale_list is not None:
+            scale_patterns = [f"scale{int(s * 100):03d}_" for s in object_scale_list]
+            all_paths = [p for p in all_paths if any(sp in p for sp in scale_patterns)]
+
+        self.scene_path_lst = np.random.permutation(all_paths)[start:end]
         log_warn(
             f"From {scene_cfg_path} get {len(self.scene_path_lst)} scene cfgs. Start: {start}, End: {end}."
         )

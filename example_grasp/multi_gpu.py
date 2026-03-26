@@ -66,10 +66,21 @@ if __name__ == "__main__":
         help="parallel world num (only used when task=grasp)",
     )
 
+    parser.add_argument(
+        "-p",
+        "--exp_name",
+        type=str,
+        default=None,
+        help="If None, use exp_name in manip_cfg_file.",
+    )
+
     parser.add_argument("-g", "--gpu", nargs="+", required=True, help="gpu id list")
     args = parser.parse_args()
 
     manip_config_data = load_yaml(join_path(get_manip_configs_path(), args.manip_cfg_file))
+
+    if args.exp_name is not None:
+        manip_config_data["exp_name"] = args.exp_name
 
     if (
         manip_config_data["world"]["start"] is not None

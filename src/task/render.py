@@ -75,10 +75,12 @@ def save_grasp_images(params):
     syn_pose = torch.from_numpy(grasp_data["robot_pose"]).to(device=device).squeeze(0)
     n_sample, n_pose, n_dof = syn_pose.shape[-3:]
 
-    b_opt_process = True if n_pose != 3 else False  # whether the data contains the whole optimization process
+    b_opt_process = cfg.task.b_opt_process
     if b_opt_process:
         pose_lst = ((n_pose - 1) * np.array(cfg.task.opt_progress)).astype(np.int64)
     else:
+        if n_pose != 3:
+            raise ValueError(f"When b_opt_process is False, n_pose must be 3, but got {n_pose}")
         pose_lst = [0, 1, 2]
 
     robot_pose = syn_pose[cfg.task.sample_lst, ...][:, pose_lst, :].clone().view(-1, n_dof)
