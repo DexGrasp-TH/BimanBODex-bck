@@ -175,6 +175,20 @@ if __name__ == "__main__":
         help="If None, use exp_name in manip_cfg_file.",
     )
 
+    parser.add_argument(
+        "--start",
+        type=int,
+        default=None,
+        help="Override world.start from the manipulation config.",
+    )
+
+    parser.add_argument(
+        "--end",
+        type=int,
+        default=None,
+        help="Override world.end from the manipulation config.",
+    )
+
     setup_logger("warn")
 
     args = parser.parse_args()
@@ -182,6 +196,12 @@ if __name__ == "__main__":
 
     if args.exp_name is not None:
         manip_config_data["exp_name"] = args.exp_name
+
+    if args.start is not None:
+        manip_config_data["world"]["start"] = args.start
+
+    if args.end is not None:
+        manip_config_data["world"]["end"] = args.end
 
     world_generator = get_world_config_dataloader(manip_config_data["world"], args.parallel_world)
 

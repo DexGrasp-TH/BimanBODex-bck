@@ -1,8 +1,8 @@
 world:
   type: scene_cfg
   template_path: object/DGN_2k/scene_cfg/**/tabletop_ur10e/*.npy
-  start:
-  end:
+  start: 0
+  end: 10
   object_scale_list: [0.06, 0.08, 0.10, 0.12] # e.g., [0.02, 0.03, 0.04] to only use scale002, scale003, scale004
 
 robot_file: "right_shadow_hand_sim.yml"

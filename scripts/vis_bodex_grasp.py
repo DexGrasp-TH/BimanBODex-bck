@@ -20,8 +20,7 @@ if __name__ == "__main__":
     mesh_dir_path = os.path.dirname(robot_urdf_path)
     visualizer = Visualizer(robot_urdf_path=robot_urdf_path, mesh_dir_path=mesh_dir_path)
 
-    # prefix = "src/curobo/content/assets/output/sim_dual_dummy_arm_shadow/fc/debug/graspdata/"
-    grasp_file_path = "src/curobo/content/assets/output/sim_dual_dummy_arm_shadow/fc/debug_98/graspdata/core_bowl_3f56833e91054d2518e800f0d88f9019/floating/scale016_grasp.npy"
+    grasp_file_path = "src/curobo/content/assets/output/sim_dual_dummy_arm_shadow/tabletop_full/local_debug5/graspdata/mujoco_Perricone_MD_Chia_Serum/tabletop_ur10e/scale020_pose004_0_grasp.npy"
 
     grasp_data = np.load(os.path.join(grasp_file_path), allow_pickle=True).item()
     scene_path = str(grasp_data["scene_path"][0])

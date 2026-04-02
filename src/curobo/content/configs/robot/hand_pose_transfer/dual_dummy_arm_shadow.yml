@@ -1,7 +1,11 @@
-# transfer_trans is defined as (palm frame in hand base frame)
-# palm frame is the sampled frame from object surface 
-# (in BODex, it is defined as x towards object, y towards right hand's thumb)
-# hand base frame is defined by the hand URDF
+# transfer_trans defines the transformation from palm frame to hand base frame
+#
+# Palm frame (sampled from object surface):
+#   - x-axis: points towards object (from palm)
+#   - y-axis: points towards thumb (right hand) or away from thumb (left hand)
+#   - z-axis: points towards four primary fingers
+#
+# Hand base frame: defined by the hand URDF
 
 rh_palm:
   # r: [[0.0, -1, 0],[1, 0, 0],[0, 0, 1]]

@@ -79,35 +79,92 @@ class HeurGraspSeedGenerator:
 
     def _init_ultradexgrasp_pose(self, extra_info: WorldCollision):
         """Initialize pose for UltraDexGrasp sampling mode."""
+        num_samples = self.seeder_cfg["obj_sample"]["num"]
         base_t_list = []
+        ind_upper_list = []
+
         for obj_idx in range(extra_info._contact_mesh_surface_points.shape[0]):
             center_pos = extra_info._contact_mesh_surface_points[obj_idx].mean(dim=-2)
             num_point = extra_info._contact_mesh_surface_points[obj_idx].shape[0]
             x_min = center_pos[1] - 0.07
             x_max = center_pos[1] + 0.03
-            obj_height = extra_info._contact_mesh_surface_points[obj_idx][..., 2].max() - extra_info._contact_mesh_surface_points[obj_idx][..., 2].min()
+            obj_height = (
+                extra_info._contact_mesh_surface_points[obj_idx][..., 2].max()
+                - extra_info._contact_mesh_surface_points[obj_idx][..., 2].min()
+            )
             if obj_height < 0.1:
                 z_min = extra_info._contact_mesh_surface_points[obj_idx][..., 2].min() + 0.15
                 z_max = extra_info._contact_mesh_surface_points[obj_idx][..., 2].max() + 0.1
             elif obj_height < 0.35:
                 z_min = extra_info._contact_mesh_surface_points[obj_idx][..., 2].min() + 0.15
-                z_max = torch.max(extra_info._contact_mesh_surface_points[obj_idx][..., 2].max() - 0.1, extra_info._contact_mesh_surface_points[obj_idx][..., 2].min() + 0.2)
+                z_max = torch.max(
+                    extra_info._contact_mesh_surface_points[obj_idx][..., 2].max() - 0.1,
+                    extra_info._contact_mesh_surface_points[obj_idx][..., 2].min() + 0.2,
+                )
             else:
-                z_min = torch.max(extra_info._contact_mesh_surface_points[obj_idx][..., 2].min() + 0.16, center_pos[2] - 0.04)
-                z_max = torch.min(extra_info._contact_mesh_surface_points[obj_idx][..., 2].max() - 0.14, center_pos[2] + 0.06)
-            y_low = extra_info._contact_mesh_surface_points[obj_idx][..., 1].min() - 0.06
-            y_high = extra_info._contact_mesh_surface_points[obj_idx][..., 1].max() + 0.06
-            x = torch.rand(num_point, device=self.tensor_args.device) * (x_max - x_min) + x_min
-            z = torch.rand(num_point, device=self.tensor_args.device) * (z_max - z_min) + z_min
-            right_hand = torch.stack([x, y_low.repeat(num_point), z], dim=-1)
-            left_hand = torch.stack([x, y_high.repeat(num_point), z], dim=-1)
+                z_min = torch.max(
+                    extra_info._contact_mesh_surface_points[obj_idx][..., 2].min() + 0.16, center_pos[2] - 0.04
+                )
+                z_max = torch.min(
+                    extra_info._contact_mesh_surface_points[obj_idx][..., 2].max() - 0.14, center_pos[2] + 0.06
+                )
+            y_low = extra_info._contact_mesh_surface_points[obj_idx][..., 1].min() - 0.10
+            y_high = extra_info._contact_mesh_surface_points[obj_idx][..., 1].max() + 0.10
+
+            # Sample num_samples points for this object
+            x = torch.rand(num_samples, device=self.tensor_args.device) * (x_max - x_min) + x_min
+            z = torch.rand(num_samples, device=self.tensor_args.device) * (z_max - z_min) + z_min
+            right_hand = torch.stack([x, y_low.repeat(num_samples), z], dim=-1)
+            left_hand = torch.stack([x, y_high.repeat(num_samples), z], dim=-1)
             base_t_list.append(torch.stack([right_hand, left_hand], dim=1))
+            ind_upper_list.append(num_samples)
+
+            # # Debug prints
+            # mesh_name = extra_info.contact_obj_names[obj_idx]
+            # print(f"Processing object {obj_idx}: {mesh_name}, samples: {num_samples}")
+            # print(f"  y_low: {y_low.item():.4f}, y_high: {y_high.item():.4f}")
+
         base_t = torch.cat(base_t_list, dim=0)
-        r_repre_right = torch.tensor([1.0, 0, 0, 0, 0, 1.0], device=self.tensor_args.device).view(1, 1, 6).expand(base_t.shape[0], 1, 6)
-        r_repre_left = torch.tensor([1.0, 0, 0, 0, 0, -1.0], device=self.tensor_args.device).view(1, 1, 6).expand(base_t.shape[0], 1, 6)
+
+        # Palm definition using Euler angles (similar to UltraDexGrasp)
+        random_z_rotation = -torch.pi * 7 / 16 * torch.rand(base_t.shape[0], device=self.tensor_args.device)
+
+        euler_right = (
+            torch.tensor([torch.pi / 2, torch.pi / 2, 0], device=self.tensor_args.device)
+            .unsqueeze(0)
+            .expand(base_t.shape[0], 3)
+            .clone()
+        )
+        euler_right[:, 2] = -random_z_rotation
+        rot_mat_right = euler_angles_to_matrix(euler_right, "XYX")  # column-first
+
+        euler_left = (
+            torch.tensor([-torch.pi / 2, torch.pi / 2, 0], device=self.tensor_args.device)
+            .unsqueeze(0)
+            .expand(base_t.shape[0], 3)
+            .clone()
+        )
+        euler_left[:, 2] = random_z_rotation
+        rot_mat_left = euler_angles_to_matrix(euler_left, "XYX")  # column-first
+
+        # Convert rotation matrices to 6D representation
+        r_repre_right = torch.cat([rot_mat_right[..., 0], rot_mat_right[..., 1]], dim=-1).unsqueeze(1)
+        r_repre_left = torch.cat([rot_mat_left[..., 0], rot_mat_left[..., 1]], dim=-1).unsqueeze(1)
         r_repre = torch.cat([r_repre_right, r_repre_left], dim=1)
 
-        return base_t, r_repre
+        # Create index generator for sampling
+        ind_upper = self.tensor_args.to_device(torch.tensor(ind_upper_list, dtype=torch.int32))
+        ind_upper = torch.cumsum(ind_upper, dim=0)
+        ind_lower = torch.cat([ind_upper[0:1] * 0, ind_upper[:-1]])
+        ind_random_gen = HaltonGenerator(
+            len(ind_upper_list),
+            self.tensor_args,
+            up_bounds=ind_upper,
+            low_bounds=ind_lower,
+            seed=1312,
+        )
+
+        return base_t, r_repre, ind_random_gen
 
     def _set_base_trq(self, t, r, q, extra_info: WorldCollision = None):
         # log_warn(f'Initialize hand pose. t: {t}, r: {r}, q: {q}')
@@ -130,9 +187,11 @@ class HeurGraspSeedGenerator:
                     low_bounds=extra_info.surface_sample_ind_lower,
                     seed=1312,
                 )
-                if tr_num == 2:
+                if tr_num == 1:
+                    pass  # No change needed for single hand
+                elif tr_num == 2:
                     if self.sampling_mode == "ultradexgrasp":
-                        base_t, r_repre = self._init_ultradexgrasp_pose(extra_info) # TODO:TEST
+                        base_t, r_repre, ind_random_gen = self._init_ultradexgrasp_pose(extra_info)
                     else:
                         # Repeat for both hands
                         base_t = base_t.repeat(1, 2, 1)
@@ -162,8 +221,8 @@ class HeurGraspSeedGenerator:
         return random_gen
 
     def _load_base_trq(self, obj_lst, load_path_dict):
-        raise NotImplemented
-    
+        raise NotImplementedError
+
         robot_pose = []
         for obj_code in obj_lst:
             obj_code = obj_code.split("_scale_")[0]  # This is only to fit the need of jialiang's data
@@ -268,7 +327,12 @@ class HeurGraspSeedGenerator:
     def get_samples(self, batch, num_samples):
         base_trans, base_rot, base_q = self._sample_to_shape(batch, num_samples)
         if self.tr_link_names is not None:
-            final_trans, final_rot = self._jitter_on_base_tr(base_trans, base_rot)
+            # Skip jittering for ultradexgrasp mode (uses pre-computed rotations)
+            if self.sampling_mode != "ultradexgrasp":
+                final_trans, final_rot = self._jitter_on_base_tr(base_trans, base_rot)
+            else:
+                # Use base poses directly without jittering
+                final_trans, final_rot = base_trans, base_rot
             if not self.skip_transfer:
                 final_trans, final_rot = self.full_robot_model.get_transfered_pose(
                     final_trans.contiguous(), final_rot.contiguous(), self.tr_link_names

@@ -13,12 +13,9 @@ class GraspConfigDataset(Dataset):
     def __init__(self, type, template_path, start, end):
         assert type == "grasp"
         template_path = join_path(get_assets_path(), template_path)
-        self.grasp_path_lst = np.random.permutation(sorted(glob(template_path, recursive=True)))[
-            start:end
-        ]
-        log_warn(
-            f"From {template_path} get {len(self.grasp_path_lst)} grasps. Start: {start}, End: {end}."
-        )
+        self.grasp_path_lst = np.random.permutation(sorted(glob(template_path, recursive=True)))[start:end]
+        # self.grasp_path_lst = sorted(glob(template_path, recursive=True))[start:end]  # no random permutation
+        log_warn(f"From {template_path} get {len(self.grasp_path_lst)} grasps. Start: {start}, End: {end}.")
         return
 
     def __len__(self):
@@ -60,7 +57,6 @@ def scenecfg2worldcfg(scene_cfg):
 
 
 class WorldConfigDataset(Dataset):
-
     def __init__(self, type, template_path, start, end, object_scale_list=None):
         assert type == "scene_cfg"
         scene_cfg_path = join_path(get_assets_path(), template_path)
@@ -72,9 +68,7 @@ class WorldConfigDataset(Dataset):
             all_paths = [p for p in all_paths if any(sp in p for sp in scale_patterns)]
 
         self.scene_path_lst = np.random.permutation(all_paths)[start:end]
-        log_warn(
-            f"From {scene_cfg_path} get {len(self.scene_path_lst)} scene cfgs. Start: {start}, End: {end}."
-        )
+        log_warn(f"From {scene_cfg_path} get {len(self.scene_path_lst)} scene cfgs. Start: {start}, End: {end}.")
         return
 
     def __len__(self):
@@ -124,7 +118,5 @@ def get_world_config_dataloader(configs, batch_size):
     else:
         raise NotImplementedError
 
-    dataloader = DataLoader(
-        dataset, batch_size=batch_size, shuffle=False, collate_fn=_world_config_collate_fn
-    )
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, collate_fn=_world_config_collate_fn)
     return dataloader

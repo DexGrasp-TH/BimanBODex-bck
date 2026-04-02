@@ -55,6 +55,7 @@ python setup.py install    # install coal_openmp_wrapper
 pip install 'pyglet<2'
 pip install hydra-core
 pip install pyrender
+pip install mujoco
 
 cd third_party/pytorch_kinematics
 pip install -e .
@@ -155,40 +156,20 @@ python example_grasp/main.py task=render manip_cfg_file=<ROBOT>/<GRASP_TYPE>.yml
   * sim_shadow/tabletop_two
   * sim_shadow/tabletop_three
   * sim_shadow/tabletop_full
+  * sim_dual_dummy_arm_shadow/tabletop_three
   * sim_dual_dummy_arm_shadow/tabletop_full
 
-
-
-
-## License
-
-The code from cuRobo is used under the NVIDIA license. All other parts of this work are licensed under [CC BY-NC 4.0][cc-by-nc].
-
-[![CC BY-NC 4.0][cc-by-nc-image]][cc-by-nc]
-
-[cc-by-nc]: https://creativecommons.org/licenses/by-nc/4.0/
-[cc-by-nc-image]: https://licensebuttons.net/l/by-nc/4.0/88x31.png
-
-## Citation
-
-If you found this repository useful, please consider to cite the following works,
-
+Batch run all grasp types:
+```bash
+./scripts/run_all_grasps.sh <EXP_NAME> <GPU_ID> <NUM_PARALLEL_ENV> [START] [END]
+# Examples:
+# ./scripts/run_all_grasps.sh minitest 0 10
+# ./scripts/run_all_grasps.sh minitest 0 10 0 10
 ```
-@article{chen2024bodex,
-  title={BODex: Scalable and Efficient Robotic Dexterous Grasp Synthesis Using Bilevel Optimization},
-  author={Chen, Jiayi and Ke, Yubin and Wang, He},
-  journal={arXiv preprint arXiv:2412.16490},
-  year={2024}
-}
 
-@misc{curobo_report23,
-      title={cuRobo: Parallelized Collision-Free Minimum-Jerk Robot Motion Generation},
-      author={Balakumar Sundaralingam and Siva Kumar Sastry Hari and Adam Fishman and Caelan Garrett
-              and Karl Van Wyk and Valts Blukis and Alexander Millane and Helen Oleynikova and Ankur Handa
-              and Fabio Ramos and Nathan Ratliff and Dieter Fox},
-      year={2023},
-      eprint={2310.17274},
-      archivePrefix={arXiv},
-      primaryClass={cs.RO}
-}
+`START` and `END` are optional overrides for `world.start` and `world.end` in the manipulation YAML files such as `src/curobo/content/configs/manip/sim_shadow/tabletop_full.yml`. If omitted, the values from each config file are used.
+
+You can also override the range when launching a single config directly:
+```bash
+CUDA_VISIBLE_DEVICES=0 python example_grasp/plan_batch_env.py -c sim_shadow/tabletop_full.yml -w 10 -k --exp_name minitest --start 0 --end 10
 ```
