@@ -5,4 +5,4 @@ debug: False
 sample_lst: [0, 1, 2, 3]
 
 b_opt_process: False  # whether the data contains the whole optimization process
-opt_progress: [0.0, 0.8]
+opt_progress: [0.0, 0.8, 1.0]

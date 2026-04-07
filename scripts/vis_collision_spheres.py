@@ -11,15 +11,20 @@ if __name__ == "__main__":
     """
 
     # ------------- create visualizer -------------
-    robot_urdf_path = "src/curobo/content/assets/robot/shadow_hand/dual_dummy_arm_shadow.urdf"
-    mesh_dir_path = "src/curobo/content/assets/robot/shadow_hand"
-    robot_config_path = "src/curobo/content/configs/robot/dual_dummy_arm_shadow.yml"
+    # robot_urdf_path = "src/curobo/content/assets/robot/leap_hand/leap.urdf"
+    # mesh_dir_path = "src/curobo/content/assets/robot/leap_hand"
+    # robot_config_path = "src/curobo/content/configs/robot/leap_hand.yml"
+    # hand_pose = torch.zeros((1, 3 + 4 + 16))
+
+    robot_urdf_path = "src/curobo/content/assets/robot/leap_hand/dual_dummy_arm_leap.urdf"
+    mesh_dir_path = "src/curobo/content/assets/robot/leap_hand"
+    robot_config_path = "src/curobo/content/configs/robot/dual_dummy_arm_leap.yml"
+    hand_pose = torch.zeros((1, 3 + 4 + 6 + 6 + 16 + 16))
 
     visualize = Visualizer(robot_urdf_path=robot_urdf_path, mesh_dir_path=mesh_dir_path)
 
-    hand_pose = torch.zeros((1, 3 + 4 + 6 + 6 + 22 + 22))
     hand_pose[:, 3] = 1.0  # quat w
-    # hand_pose[:, 7:] = torch.rand_like(hand_pose[:, 7:])
+    hand_pose[:, 7:] = torch.rand_like(hand_pose[:, 7:])
 
     visualize.set_robot_parameters(hand_pose)
     robot_mesh = visualize.get_robot_trimesh_data(i=0, color=[0, 255, 0, 100])

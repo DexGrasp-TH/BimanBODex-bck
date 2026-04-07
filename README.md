@@ -109,38 +109,16 @@ python example_grasp/visualize_npy.py -c sim_shadow/fc.yml -p debug -m grasp
 
 ## Mingrui Usage
 
-Synthesize bimanual grasps:
-```bash
-# debug
-python example_grasp/plan_batch_env.py -c sim_dual_dummy_arm_shadow/fc.yml -w 100 -k -debug -d all --exp_name <NAME>
+### Robot Asserts Preparation
 
-# not debug
-python example_grasp/plan_batch_env.py -c sim_dual_dummy_arm_shadow/fc.yml -w 100 -k --exp_name <NAME>
-```
+1. Assemble the `<hand>.urdf` and `dual_dummy_arm_<hand>.urdf` via `robot_assets`.
+1. Copy the urdf and meshes files into `src/curobo/content/assets/robot`.
+1. Create a robot config.yml in `src/curobo/content/configs/robot`.
+    1. When setting the collision_spheres, you can use `scripts/vis_collision_spheres.py` to help visualize and manually adjust the collision spheres.
+    1. When setting the `hand_pose_transfer` parameters, you can use `scripts/vis_hand_pose_transfer.py` to visualize the hand base frame and palm frame. The frame adjustment is centralized in `adjust_palm_frame`, and pressing `s` in the trimesh viewer will save the adjusted `hand_base_link` parameters back to the YAML file.
 
-Render images:
-```bash
-python example_grasp/main.py task=render manip_cfg_file=sim_dual_dummy_arm_shadow/fc.yml n_worker=96 task.debug=False name=<EXP_NAME> 
-```
 
-Synthesize single-hand grasps:
-
-```bash
-# debug
-CUDA_VISIBLE_DEVICES=7 python example_grasp/plan_batch_env.py -c sim_shadow/tabletop.yml -w 100 -k -debug -d all --exp_name <NAME>
-
-# non-debug
-CUDA_VISIBLE_DEVICES=0 python example_grasp/plan_batch_env.py -c sim_shadow/fc.yml -w 100 -k --exp_name <NAME>
-# multi-GPU
-python example_grasp/multi_gpu.py -c sim_shadow/fc.yml -w 100 -t grasp -g 0 1 2 3 4 5 6 7 --exp_name <NAME>
-```
-
-Check the synthesis progress:
-```bash
-python scripts/synthesis_percentage.py <config_path> <exp_name> # e.g., sim_shadow/tabletop_full server_debug0
-```
-
-### Five Grasp Types
+### Synthesis of Five Grasp Types
 
 Synthesis:
 ```bash
@@ -157,7 +135,7 @@ $ python example_grasp/multi_gpu.py -c <ROBOT>/<GRASP_TYPE>.yml -w 100 -t grasp 
 
 Render:
 ```bash
-python example_grasp/main.py task=render manip_cfg_file=<ROBOT>/<GRASP_TYPE>.yml n_worker=96 task.debug=False name=<EXP_NAME> 
+python example_grasp/main.py task=render manip_cfg_file=<ROBOT>/<GRASP_TYPE>.yml n_worker=96 task.debug=False task.b_opt_process=<True/False> name=<EXP_NAME> 
 ```
 
 * ROBOT/GRASP_TYPE:
