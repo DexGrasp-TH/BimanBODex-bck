@@ -3,7 +3,7 @@ world:
   template_path: object/DGN_2k/scene_cfg/**/tabletop_ur10e/*.npy
   start: 
   end:
-  object_scale_list: [0.06, 0.08, 0.10, 0.12]
+  object_scale_list: [0.08, 0.10, 0.12]
 
 robot_file: "leap_hand.yml"
 robot_file_with_arm: 

@@ -1,13 +1,12 @@
 world:
   type: scene_cfg
   template_path: object/DGN_2k/scene_cfg/**/tabletop_ur10e/*.npy
-  start:
+  start: 
   end:
-  object_scale_list: [0.02, 0.03] # e.g., [0.02, 0.03, 0.04] to only use scale002, scale003, scale004
+  object_scale_list: [0.05, 0.06]
 
-robot_file: "right_shadow_hand_sim.yml"
-# robot_file_with_arm: "ur10e_shadow_sim.yml"
-robot_file_with_arm:
+robot_file: "leap_hand.yml"
+robot_file_with_arm: 
 base_cfg_file: "base_grasp.yml"
 particle_file: "particle_grasp_debug.yml"
 gradient_file: "gradient_grasp_fc.yml"
@@ -25,14 +24,15 @@ seeder_cfg:
   skip_transfer: False
   t:  
   r:  
-  q: [ 0, 1., 0, -0.2, 0, -0.1, 0.3, 0., 0., 0, 0.3, 0., 0., -0.1, 0.3, 0., 0., 0, -0.2, 0.3, 0., 0.] # qpose: TH, FF, MF, RF, LF
+  q: [ 0.5, 0, 0.5, 0., 0.5, 0, 0.5, 0, 0.5, 0, 0.5, 0, 1.58, 0, -0.5, 0.0]  
   jitter_angle: [[-180, -15, -15], [180, 15, 15]]
   jitter_dist: [[0.0, -0.03, -0.03], [0.03, 0.03, 0.03]]
 
 grasp_contact_strategy:
-  contact_points_name: ['rh_ffdistal/2', 'rh_thdistal/1']
+  contact_points_name: ['rh_fingertip_1/0', 'rh_fingertip_2/0', 'rh_thumb_fingertip/0'] # 0 is the index of collision spheres
   contact_normals:
     [
+        [0, -1, 0],
         [0, -1, 0],
         [0, -1, 0],
     ]
@@ -55,14 +55,14 @@ grasp_cfg:
     miu_coef: [0.1, 0]
     solver_type: 'batch_reluqp'
     k_lower: 0.2
-    groups: [[0, 1]]
+    groups: [[0, 1, 2]]
     weights: [1.0]
     multi_ge_type: "concate"
-    pressure_constraints:   # [contact_id_list, lower, upper] (lower <= sum of contact forces <= upper)
+    pressure_constraints:   # [contact_id_list, lower]
       [
-        [[0, 1], 1.0, 2.0],
-        [[0], 0.5, 1.0], 
-        [[1], 0.5, 1.0], 
+        [[0, 1, 2], 1.0, 3.0],
+        [[0, 1], 0.4, 2.0],
+        [[2], 0.5, 1.0],
       ]
     enable_density: False
     solve_interval: 5

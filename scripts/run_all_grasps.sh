@@ -1,17 +1,53 @@
 #!/bin/bash
 
-# Run grasp planning for all robot/grasp_type combinations.
-# Usage: ./scripts/run_all_grasps.sh [EXP_NAME] [GPU_ID] [NUM_PARALLEL_ENV] [START] [END]
-# START and END optionally override world.start and world.end from each manipulation YAML.
-# Examples:
-#   ./scripts/run_all_grasps.sh minitest 0 10
-#   ./scripts/run_all_grasps.sh minitest 0 10 0 10
+set -u
 
-EXP_NAME=${1:-"default"}
-GPU_ID=${2:-7}
-NUM_PARALLEL_ENV=${3:-10}
-START=${4:-}
-END=${5:-}
+# Run grasp planning for all robot/grasp_type combinations.
+# Usage:
+#   ./scripts/run_all_grasps.sh --exp-name NAME --gpu GPU_ID --parallel-env N [--start START] [--end END]
+# Examples:
+#   ./scripts/run_all_grasps.sh --exp-name minitest --gpu 0 --parallel-env 10
+#   ./scripts/run_all_grasps.sh --exp-name minitest --gpu 0 --parallel-env 10 --start 0 --end 10
+
+EXP_NAME="default"
+GPU_ID=7
+NUM_PARALLEL_ENV=10
+START=""
+END=""
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --exp-name)
+            EXP_NAME="$2"
+            shift 2
+            ;;
+        --gpu)
+            GPU_ID="$2"
+            shift 2
+            ;;
+        --parallel-env)
+            NUM_PARALLEL_ENV="$2"
+            shift 2
+            ;;
+        --start)
+            START="$2"
+            shift 2
+            ;;
+        --end)
+            END="$2"
+            shift 2
+            ;;
+        -h|--help)
+            echo "Usage: ./scripts/run_all_grasps.sh --exp-name NAME --gpu GPU_ID --parallel-env N [--start START] [--end END]"
+            exit 0
+            ;;
+        *)
+            echo "Unknown argument: $1"
+            echo "Use --help for usage."
+            exit 1
+            ;;
+    esac
+done
 
 # Define robot and grasp type combinations
 declare -a CONFIGS=(

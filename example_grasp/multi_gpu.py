@@ -2,6 +2,7 @@ import os
 import numpy as np
 from glob import glob
 import argparse
+import sys
 from curobo.util_file import (
     get_manip_configs_path,
     get_output_path,
@@ -15,19 +16,82 @@ import multiprocessing
 import datetime
 
 
-def worker(gpu_id, task, manip_path, save_folder, output_path, save_mode, parallel_world):
+def get_matching_world_paths(world_cfg):
+    template_path = join_path(get_assets_path(), world_cfg["template_path"])
+
+    if world_cfg["type"] == "scene_cfg":
+        all_paths = sorted(glob(template_path))
+        object_scale_list = world_cfg.get("object_scale_list")
+        if object_scale_list is not None:
+            scale_patterns = [f"scale{int(s * 100):03d}_" for s in object_scale_list]
+            all_paths = [p for p in all_paths if any(pattern in p for pattern in scale_patterns)]
+        return all_paths
+
+    if world_cfg["type"] == "grasp":
+        return sorted(glob(template_path, recursive=True))
+
+    raise NotImplementedError(f"Unsupported world type: {world_cfg['type']}")
+
+
+def worker(
+    gpu_id,
+    task,
+    manip_path,
+    save_folder,
+    output_path,
+    save_mode,
+    parallel_world,
+    save_data,
+    save_id,
+    save_debug,
+    skip,
+):
     with open(output_path, "w") as output_file:
         if task == "grasp":
+            cmd = [
+                sys.executable,
+                "example_grasp/plan_batch_env.py",
+                "-c",
+                manip_path,
+                "-f",
+                save_folder,
+                "-m",
+                save_mode,
+                "-w",
+                str(parallel_world),
+                "-d",
+                save_data,
+            ]
+            if save_id is not None:
+                cmd.extend(["-i", *[str(v) for v in save_id]])
+            if save_debug:
+                cmd.append("--save_debug")
+            if not skip:
+                cmd.append("-k")
             subprocess.call(
-                f"CUDA_VISIBLE_DEVICES={gpu_id} python example_grasp/plan_batch_env.py -c {manip_path} -f {save_folder} -m {save_mode} -w {parallel_world}",
-                shell=True,
+                cmd,
+                env={**os.environ, "CUDA_VISIBLE_DEVICES": str(gpu_id)},
                 stdout=output_file,
                 stderr=output_file,
             )
         else:
+            cmd = [
+                sys.executable,
+                "example_grasp/plan_mogen_batch.py",
+                "-c",
+                manip_path,
+                "-f",
+                save_folder,
+                "-m",
+                save_mode,
+                "-t",
+                task,
+            ]
+            if not skip:
+                cmd.append("-k")
             subprocess.call(
-                f"CUDA_VISIBLE_DEVICES={gpu_id} python example_grasp/plan_mogen_batch.py -c {manip_path} -f {save_folder} -m {save_mode} -t {task}",
-                shell=True,
+                cmd,
+                env={**os.environ, "CUDA_VISIBLE_DEVICES": str(gpu_id)},
                 stdout=output_file,
                 stderr=output_file,
             )
@@ -59,6 +123,37 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "-f",
+        "--save_folder",
+        type=str,
+        default=None,
+        help="If None, use join_path(manip_cfg_file[:-4], $TIME) as save_folder",
+    )
+
+    parser.add_argument(
+        "-d",
+        "--save_data",
+        default="all",
+        help="Which grasp results to save",
+    )
+
+    parser.add_argument(
+        "-i",
+        "--save_id",
+        type=int,
+        nargs="+",
+        default=None,
+        help="Which grasp results to save",
+    )
+
+    parser.add_argument(
+        "-debug",
+        "--save_debug",
+        action="store_true",
+        help="Whether to save contact normal debug data for grasp",
+    )
+
+    parser.add_argument(
         "-w",
         "--parallel_world",
         type=int,
@@ -74,6 +169,27 @@ if __name__ == "__main__":
         help="If None, use exp_name in manip_cfg_file.",
     )
 
+    parser.add_argument(
+        "-k",
+        "--skip",
+        action="store_false",
+        help="If True, skip existing files. (default: True)",
+    )
+
+    parser.add_argument(
+        "--start",
+        type=int,
+        default=None,
+        help="Override world.start from the manipulation config before splitting across GPUs.",
+    )
+
+    parser.add_argument(
+        "--end",
+        type=int,
+        default=None,
+        help="Override world.end from the manipulation config before splitting across GPUs.",
+    )
+
     parser.add_argument("-g", "--gpu", nargs="+", required=True, help="gpu id list")
     args = parser.parse_args()
 
@@ -82,23 +198,26 @@ if __name__ == "__main__":
     if args.exp_name is not None:
         manip_config_data["exp_name"] = args.exp_name
 
-    if (
-        manip_config_data["world"]["start"] is not None
-        and manip_config_data["world"]["end"] is not None
-    ):
-        all_obj_num = manip_config_data["world"]["end"] - manip_config_data["world"]["start"]
-        original_start = manip_config_data["world"]["start"]
-    else:
-        all_obj_num = len(
-            glob(join_path(get_assets_path(), manip_config_data["world"]["template_path"]))
-        )
-        original_start = 0
+    if args.start is not None:
+        manip_config_data["world"]["start"] = args.start
+
+    if args.end is not None:
+        manip_config_data["world"]["end"] = args.end
+
+    world_start = manip_config_data["world"]["start"]
+    world_end = manip_config_data["world"]["end"]
+    original_start = 0 if world_start is None else world_start
+    matching_world_paths = get_matching_world_paths(manip_config_data["world"])
+
+    all_obj_num = len(matching_world_paths[original_start:world_end])
     obj_num_lst = np.array([all_obj_num // len(args.gpu)] * len(args.gpu))
     obj_num_lst[: (all_obj_num % len(args.gpu))] += 1
     assert obj_num_lst.sum() == all_obj_num
 
     p_list = []
-    if manip_config_data["exp_name"] is not None:
+    if args.save_folder is not None:
+        save_folder = args.save_folder
+    elif manip_config_data["exp_name"] is not None:
         save_folder = os.path.join(args.manip_cfg_file[:-4], manip_config_data["exp_name"])
     else:
         save_folder = os.path.join(
@@ -127,6 +246,10 @@ if __name__ == "__main__":
                 output_path,
                 args.save_mode,
                 args.parallel_world,
+                args.save_data,
+                args.save_id,
+                args.save_debug,
+                args.skip,
             ),
         )
         p.start()
