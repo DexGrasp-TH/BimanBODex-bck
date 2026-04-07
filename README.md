@@ -115,6 +115,7 @@ python example_grasp/visualize_npy.py -c sim_shadow/fc.yml -p debug -m grasp
 1. Copy the urdf and meshes files into `src/curobo/content/assets/robot`.
 1. Create a robot config.yml in `src/curobo/content/configs/robot`.
     1. When setting the collision_spheres, you can use `scripts/vis_collision_spheres.py` to help visualize and manually adjust the collision spheres.
+    1. When setting the `hand_pose_transfer` parameters, you can use `scripts/vis_hand_pose_transfer.py` to visualize the hand base frame and palm frame. The frame adjustment is centralized in `adjust_palm_frame`, and pressing `s` in the trimesh viewer will save the adjusted `hand_base_link` parameters back to the YAML file.
 
 
 ### Synthesis of Five Grasp Types
@@ -126,7 +127,7 @@ CUDA_VISIBLE_DEVICES=7 python example_grasp/plan_batch_env.py -c <ROBOT>/<GRASP_
 
 Render:
 ```bash
-python example_grasp/main.py task=render manip_cfg_file=<ROBOT>/<GRASP_TYPE>.yml n_worker=96 task.debug=False name=<EXP_NAME> 
+python example_grasp/main.py task=render manip_cfg_file=<ROBOT>/<GRASP_TYPE>.yml n_worker=96 task.debug=False task.b_opt_process=<True/False> name=<EXP_NAME> 
 ```
 
 * ROBOT/GRASP_TYPE:

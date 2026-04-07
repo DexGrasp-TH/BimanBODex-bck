@@ -12,7 +12,7 @@
 robot_cfg:
   kinematics:
     use_root_pose: True
-    hand_pose_transfer_path: "hand_pose_transfer/leap.yml" # To Be Checked
+    hand_pose_transfer_path: "hand_pose_transfer/leap_hand.yml"
     usd_path: "robot/leap_description/leap.usd"
     usd_robot_root: "/robot"
     isaac_usd_path: ""
@@ -29,9 +29,9 @@ robot_cfg:
     extra_links: null
 
     collision_link_names: ['rh_palm_lower', 
-      'rh_mcp_joint', 'rh_pip', 'rh_dip', 'rh_fingertip_base', 'rh_fingertip_1', 
-      'rh_mcp_joint_2', 'rh_pip_2', 'rh_dip_2', 'rh_fingertip_base_2', 'rh_fingertip_2',
-      'rh_mcp_joint_3', 'rh_pip_3', 'rh_dip_3', 'rh_fingertip_base_3', 'rh_fingertip_3',
+      'rh_mcp_joint', 'rh_pip', 'rh_dip', 'rh_fingertip_1', 
+      'rh_mcp_joint_2', 'rh_pip_2', 'rh_dip_2', 'rh_fingertip_2',
+      'rh_mcp_joint_3', 'rh_pip_3', 'rh_dip_3', 'rh_fingertip_3',
       'rh_pip_4', 'rh_thumb_dip', 'rh_thumb_fingertip_base', 'rh_thumb_fingertip']
     collision_spheres: "spheres/leap_hand.yml"
        
@@ -41,20 +41,17 @@ robot_cfg:
       'rh_palm_lower' : ['rh_mcp_joint', 'rh_mcp_joint_2', 'rh_mcp_joint_3', 'rh_pip_4', 'rh_thumb_dip'],
       'rh_mcp_joint' : ['rh_pip'],
       'rh_pip' : ['rh_dip'],
-      'rh_dip' : ['rh_fingertip_base'],
-      'rh_fingertip_base' : ['rh_fingertip_1'],
+      'rh_dip' : [],
       'rh_fingertip_1': [],
 
       'rh_mcp_joint_2' : ['rh_pip_2'],
       'rh_pip_2': ['rh_dip_2'],
-      'rh_dip_2' : ['rh_fingertip_base_2'],
-      'rh_fingertip_base_2' : ['rh_fingertip_2'],
+      'rh_dip_2' : [],
       'rh_fingertip_2': [],
 
       'rh_mcp_joint_3' : ['rh_pip_3'],
       'rh_pip_3' : ['rh_dip_3'], 
-      'rh_dip_3' : ['rh_fingertip_base_3'],
-      'rh_fingertip_base_3' : [rh_fingertip_3],
+      'rh_dip_3' : [],
       'rh_fingertip_3': [],
 
       'rh_pip_4' : ['rh_thumb_dip'],
@@ -67,19 +64,16 @@ robot_cfg:
       'rh_mcp_joint' : 0,
       'rh_pip' : 0,
       'rh_dip' : 0,
-      'rh_fingertip_base' : 0,
       'rh_fingertip_1': 0.002,
 
       'rh_mcp_joint_2' : 0,
       'rh_pip_2': 0,
       'rh_dip_2' : 0,
-      'rh_fingertip_base_2' : 0,
       'rh_fingertip_2' : 0.002,
 
       'rh_mcp_joint_3' : 0,
       'rh_pip_3' : 0, 
       'rh_dip_3' : 0,
-      'rh_fingertip_base_3' : 0,
       'rh_fingertip_3': 0.002,
 
       'rh_pip_4' : 0,
@@ -96,19 +90,16 @@ robot_cfg:
         'rh_mcp_joint' ,
         'rh_pip' ,
         'rh_dip' ,
-        'rh_fingertip_base' ,
         'rh_fingertip_1',
 
         'rh_mcp_joint_2' ,
         'rh_pip_2',
         'rh_dip_2' ,
-        'rh_fingertip_base_2' ,
         'rh_fingertip_2',
 
         'rh_mcp_joint_3' ,
         'rh_pip_3' , 
         'rh_dip_3' ,
-        'rh_fingertip_base_3' ,
         'rh_fingertip_3',
 
         'rh_pip_4' ,

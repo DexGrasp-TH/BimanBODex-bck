@@ -1341,19 +1341,19 @@
     </inertial>
   </link>
   <joint name="lh_joint_12" type="revolute">
-    <origin rpy="-1.570796326794896336 -1.570796326794896336 0" xyz="-1.0148132334464321502e-16 -0.014100000000000126321 -0.012999999999999956035"/>
-    <parent link="lh_pip_4"/>
-    <child link="lh_thumb_pip"/>
-    <axis xyz="0 0 -1"/>
-    <limit effort="0.95" lower="-2.094" upper="0.349" velocity="8.48"/>
-    <joint_properties friction="0.0"/>
-  </joint>
-  <joint name="lh_joint_13" type="revolute">
     <origin rpy="3.5629789726327258012e-15 1.5707963267948961139 0" xyz="-0.14487422493839263726 -0.090040011501137440231 0.004900888583899039308"/>
     <parent link="lh_palm_lower_left"/>
     <child link="lh_pip_4"/>
     <axis xyz="0 0 -1"/>
     <limit effort="0.95" lower="-2.443" upper="0.47" velocity="8.48"/>
+    <joint_properties friction="0.0"/>
+  </joint>
+  <joint name="lh_joint_13" type="revolute">
+    <origin rpy="-1.570796326794896336 -1.570796326794896336 0" xyz="-1.0148132334464321502e-16 -0.014100000000000126321 -0.012999999999999956035"/>
+    <parent link="lh_pip_4"/>
+    <child link="lh_thumb_pip"/>
+    <axis xyz="0 0 -1"/>
+    <limit effort="0.95" lower="-2.094" upper="0.349" velocity="8.48"/>
     <joint_properties friction="0.0"/>
   </joint>
   <joint name="lh_joint_14" type="revolute">
