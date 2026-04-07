@@ -127,7 +127,7 @@ CUDA_VISIBLE_DEVICES=7 python example_grasp/plan_batch_env.py -c <ROBOT>/<GRASP_
 
 Multi-gpu synthesis:
 ```bash
-$ python example_grasp/multi_gpu.py -c <ROBOT>/<GRASP_TYPE>.yml -w 100 -t grasp -g <GPU_ID...> --exp_name <NAME>
+$ CUDA_VISIBLE_DEVICES=7 python example_grasp/multi_gpu.py -c <ROBOT>/<GRASP_TYPE>.yml -w 100 -t grasp -g <GPU_ID...> --exp_name <NAME>
 
 # Example:
 # $ python example_grasp/multi_gpu.py -c sim_shadow/tabletop_full.yml -w 10 -t grasp -g 0 1 2 3 --exp_name minitest_multigpu --start 0 --end 10
@@ -144,22 +144,21 @@ python example_grasp/main.py task=render manip_cfg_file=<ROBOT>/<GRASP_TYPE>.yml
   * sim_shadow/tabletop_full
   * sim_dual_dummy_arm_shadow/tabletop_three
   * sim_dual_dummy_arm_shadow/tabletop_full
+  * sim_leap/tabletop_two
+  * sim_leap/tabletop_three
+  * sim_leap/tabletop_full
+  * sim_dual_dummy_arm_leap/tabletop_three
+  * sim_dual_dummy_arm_leap/tabletop_full
 
-Batch run all grasp types:
-```bash
-./scripts/run_all_grasps.sh --exp-name <EXP_NAME> --gpu <GPU_ID> --parallel-env <NUM_PARALLEL_ENV> [--start START] [--end END]
-# Examples:
-# ./scripts/run_all_grasps.sh --exp-name minitest --gpu 0 --parallel-env 10 --start 0 --end 10
-```
-
-`START` and `END` are optional overrides for `world.start` and `world.end` in the manipulation YAML files such as `src/curobo/content/configs/manip/sim_shadow/tabletop_full.yml`. If omitted, the values from each config file are used.
 
 Batch run all grasp types on multiple GPUs:
 ```bash
-./scripts/run_all_grasps_multi_gpu.sh --exp-name <EXP_NAME> --parallel-env <NUM_PARALLEL_ENV> --gpus <GPU_ID...> [-k] [--start START] [--end END]
+./scripts/run_all_grasps_multi_gpu.sh --hand <shadow|leap> --exp-name <EXP_NAME> --parallel-env <NUM_PARALLEL_ENV> --gpus <GPU_ID...> [-k] [--start START] [--end END]
 # Examples:
-# ./scripts/run_all_grasps_multi_gpu.sh --exp-name full_dataset_v1 --parallel-env 40 --gpus 0 1 2 3 4 5 6 7
-# ./scripts/run_all_grasps_multi_gpu.sh --exp-name minitest --parallel-env 10 --gpus 0 1 2 3 -k --start 0 --end 10
+# ./scripts/run_all_grasps_multi_gpu.sh --hand leap --exp-name dataset_1k --parallel-env 40 --gpus 4 5 6 7 --start 0 --end 1000
+# ./scripts/run_all_grasps_multi_gpu.sh --hand leap --exp-name minitest --parallel-env 10 --gpus 0 1 2 3 -k --start 0 --end 10
 ```
 
-`-k` disables skipping existing files, matching `example_grasp/multi_gpu.py`.
+* `shadow` and `leap` select the config family to run. 
+* `-k` disables skipping existing files, matching `example_grasp/multi_gpu.py`.
+* `START` and `END` are optional overrides for `world.start` and `world.end` in the manipulation YAML files such as `src/curobo/content/configs/manip/sim_shadow/tabletop_full.yml`. If omitted, the values from each config file are used.
