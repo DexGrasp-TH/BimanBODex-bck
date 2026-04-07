@@ -1,8 +1,8 @@
 world:
   type: scene_cfg
   template_path: object/DGN_2k/scene_cfg/**/tabletop_ur10e/*.npy
-  start: 0
-  end: 10
+  start:
+  end:
   object_scale_list: [0.12, 0.16, 0.20] # e.g., [0.02, 0.03, 0.04] to only use scale002, scale003, scale004
 
 robot_file: "dual_dummy_arm_shadow.yml"
