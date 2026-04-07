@@ -42,14 +42,14 @@ grasp_contact_strategy:
                         'lh_fingertip_3/0', 'lh_thumb_fingertip/0']
   contact_normals:
     [
-      [0, -1, 0],
-      [0, -1, 0],
-      [0, -1, 0],
-      [0, -1, 0],
-      [0, -1, 0],
-      [0, -1, 0],
-      [0, -1, 0],
-      [0, -1, 0],
+      [0, 0, 1],
+      [0, 0, 1],
+      [0, 0, 1],
+      [0, 0, 1],
+      [0, 0, 1],
+      [0, 0, 1],
+      [0, 0, 1],
+      [0, 0, 1],
     ]
 
   # for contact stages during the optimization
