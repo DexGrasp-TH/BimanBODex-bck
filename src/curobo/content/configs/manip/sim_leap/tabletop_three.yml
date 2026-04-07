@@ -32,9 +32,9 @@ grasp_contact_strategy:
   contact_points_name: ['rh_fingertip_1/0', 'rh_fingertip_2/0', 'rh_thumb_fingertip/0'] # 0 is the index of collision spheres
   contact_normals:
     [
-        [0, -1, 0],
-        [0, -1, 0],
-        [0, -1, 0],
+        [0, 0, 1],
+        [0, 0, 1],
+        [0, 0, 1],
     ]
   opt_progress: [0.0, 0.6, 0.8]
   distance: [0.01, 0.01, 0.0]
@@ -71,9 +71,9 @@ gradient:
   cost:
     grasp_cfg: 
       weight: [
-                [100, 1000, 100, 0],
-                [100, 1000, 100, 0],
-                [100, 1000, 100, 0],
+                [100, 1000, 100, 0.1],
+                [100, 1000, 100, 0.01],
+                [100, 1000, 100, 0.001],
               ] # grasp loss, dist loss, regu loss, normal loss for each contact stage
   lbfgs:
     n_iters: 500
