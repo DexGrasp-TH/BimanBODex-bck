@@ -98,7 +98,13 @@ def worker(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description=(
+            "Split the configured world range across GPUs and launch one worker per GPU. "
+            "Current limitation: this script does not rebalance work based on existing outputs. "
+            "It first assigns file ranges to GPUs, then each GPU applies skipping independently."
+        )
+    )
 
     parser.add_argument(
         "-c",
@@ -173,7 +179,11 @@ if __name__ == "__main__":
         "-k",
         "--skip",
         action="store_false",
-        help="If True, skip existing files. (default: True)",
+        help=(
+            "If True, skip existing files. (default: True) Note: skipping happens independently "
+            "inside each GPU worker after ranges have already been assigned, so existing files "
+            "are not redistributed across GPUs."
+        ),
     )
 
     parser.add_argument(
@@ -213,6 +223,11 @@ if __name__ == "__main__":
     obj_num_lst = np.array([all_obj_num // len(args.gpu)] * len(args.gpu))
     obj_num_lst[: (all_obj_num % len(args.gpu))] += 1
     assert obj_num_lst.sum() == all_obj_num
+
+    print(
+        "multi_gpu scheduling note: file ranges are assigned to GPUs before skip checks. "
+        "Existing outputs are not redistributed across GPUs; each GPU skips its own assigned files."
+    )
 
     p_list = []
     if args.save_folder is not None:

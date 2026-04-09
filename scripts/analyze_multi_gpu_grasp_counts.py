@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+from datetime import datetime
 from glob import glob
 from pathlib import Path
 
@@ -110,6 +111,7 @@ def main():
         for config_path in CONFIGS_BY_HAND[args.hand]
     ]
 
+    print(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"Hand: {args.hand}")
     print(f"Experiment: {args.exp_name}")
     if args.start is not None or args.end is not None:
