@@ -305,6 +305,7 @@ class GraspSolverConfig:
                 self_collision_check=False,  # BODEX: True
                 self_collision_opt=False,  # BODEX: True
                 regularization=True,
+                use_cuda_graph=use_cuda_graph,
             )
             ik_solver = IKSolver(ik_config)
 
